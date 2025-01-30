@@ -12,15 +12,15 @@ Using a default project setup fetches user info on the server using the `auth-se
 
 Working without API key restriction:
 Vercel working:
-![Vercel working](https://github.com/vojdan/ssr-issue-repro/blob/main/vercel-success-before.png)
+<img src="https://github.com/vojdan/ssr-issue-repro/blob/main/vercel-success-before.png" width="400">
 Firebase App Hosting working:
-![Firebase App Hosting working](https://github.com/vojdan/ssr-issue-repro/blob/main/app-hosting-success-before.png)
+<img src="https://github.com/vojdan/ssr-issue-repro/blob/main/app-hosting-success-before.png" width="400">
 
 Adding the API key restriction:
 GCP Firebase API key Website restrictions:
-![GCP Firebase API key Website restrictions](https://github.com/vojdan/ssr-issue-repro/blob/main/firebase-api-key-restrictions.png)
+<img src="https://github.com/vojdan/ssr-issue-repro/blob/main/firebase-api-key-restrictions.png" width="400">
 Firebase Auth Authorized domains:
-![Firebase Auth Authorized domains](https://github.com/vojdan/ssr-issue-repro/blob/main/firebase-auth-allowed-domains.png)
+<img src="https://github.com/vojdan/ssr-issue-repro/blob/main/firebase-auth-allowed-domains.png" width="400">
 
 #### Does not work
 
@@ -42,9 +42,9 @@ FirebaseServerApp could not login user with provided authIdToken:  Error [Fireba
 
 Not working with API key restriction:
 Vercel fail:
-![Vercel fail](https://github.com/vojdan/ssr-issue-repro/blob/main/vercel-fail-after.png)
+<img src="https://github.com/vojdan/ssr-issue-repro/blob/main/vercel-fail-after.png" width="400">
 Firebase App Hosting fail:
-![Firebase App Hosting fail](https://github.com/vojdan/ssr-issue-repro/blob/main/firebase-app-hosting-fail-after.png)
+<img src="https://github.com/vojdan/ssr-issue-repro/blob/main/firebase-app-hosting-fail-after.png" width="400">
 
 ## Steps to reproduce
 
