@@ -50,7 +50,7 @@ const getBodyContent = req => {
 
 const getIdTokenPromise = () => {
 	return new Promise((resolve, reject) => {
-		console.log('getting id token promise');
+		console.log('getting id token promise', firebaseConfig);
 		const app = initializeApp(firebaseConfig);
 		const auth = getAuth(app);
 
