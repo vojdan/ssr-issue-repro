@@ -16,7 +16,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 	return (
 		<html lang="en">
 			<body>
-				<h1>LAYOUT</h1>
+				<h1>LAYOUT {currentUser?.uid}</h1>
 				<div className="flex">
 					<Link style={{ margin: '8px' }} href="/">
 						Home
