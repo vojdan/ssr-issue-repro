@@ -2,7 +2,7 @@
   "emulators": {
     "apphosting": {
       "port": 5002,
-      "rootDirectory": "./"
+      "rootDirectory": "./nextjs"
     },
     "auth": {
       "port": 9099
