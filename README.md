@@ -8,18 +8,22 @@
 
 Using a default project setup fetches user info on the server using the `auth-service-worker` (to send the idToken to the server) and `initializeServerApp` (to get the user info).
 
-**Screenshots:**
+#### Screenshots
 
-Working without API key restriction:
-Vercel working:
+#### Working without API key restriction:
+
+#### Vercel working:
+
 <img src="https://github.com/vojdan/ssr-issue-repro/blob/main/vercel-success-before.png" width="400">
-Firebase App Hosting working:
+#### Firebase App Hosting working:
 <img src="https://github.com/vojdan/ssr-issue-repro/blob/main/app-hosting-success-before.png" width="400">
 
-Adding the API key restriction:
-GCP Firebase API key Website restrictions:
+#### Adding the API key restriction:
+
+#### GCP Firebase API key Website restrictions:
+
 <img src="https://github.com/vojdan/ssr-issue-repro/blob/main/firebase-api-key-restrictions.png" width="400">
-Firebase Auth Authorized domains:
+#### Firebase Auth Authorized domains:
 <img src="https://github.com/vojdan/ssr-issue-repro/blob/main/firebase-auth-allowed-domains.png" width="400">
 
 #### Does not work
@@ -40,10 +44,12 @@ FirebaseServerApp could not login user with provided authIdToken:  Error [Fireba
 }
 ```
 
-Not working with API key restriction:
-Vercel fail:
+#### Not working with API key restriction:
+
+#### Vercel fail:
+
 <img src="https://github.com/vojdan/ssr-issue-repro/blob/main/vercel-fail-after.png" width="400">
-Firebase App Hosting fail:
+#### Firebase App Hosting fail:
 <img src="https://github.com/vojdan/ssr-issue-repro/blob/main/firebase-app-hosting-fail-after.png" width="400">
 
 ## Steps to reproduce
