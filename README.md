@@ -71,7 +71,7 @@ Note: The service worker does not automatically update/reload the SSR data. A pa
 7. Success (no API key restriction) vs fail (with API key restriction)
     - SUCCESS: The "Server Header", "Layout" and "Client Header" will have the UID. The "Server Header" and "Layout" will render with the UID already set, but the "Client Header" will update after Firebase establishes a client connection.
     - FAIL: Only the "Client Header" will have the UID. The backend logs an error `auth/requests-from-referer-<empty>-are-blocked`.
-8. Removing the API key Website restriction fixes the issue without code changes.
+8. Removing the API key Website restriction fixes the issue without code changes. (Note: might need to reinstall the Service Worker or open an incognito window. "Chrome > Application > Service Workers > Update on reload" seems to work as well.)
 
 ## Rebuild the Service Worker
 
