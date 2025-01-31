@@ -66,11 +66,11 @@ Note: The service worker does not automatically update/reload the SSR data. A pa
 2. When the page load it will register a service worker
 3. Click the "Sign in" button. This will sign in a demo user with a username and password and update the "Client Header", but not the "Server Header" and the "Layout". Alternatively, "Sign in Anon" will sign in an anonymous user and update the "Client Header", but not the "Server Header" and the "Layout".
 4. Verify SSR works as expected by reloading the page (CMD + R) so the Service Worker can include the Authorization header in the request (needed for SSR Auth).
-5. Add the expected Website API key restriction to the project (the domain where the app is hosted) from the GCP console.
+5. Add the correct Website API key restriction to the project (the domain where the app is hosted) from the GCP console.
 6. Wait some time (up to 5 minutes) for GCP to propagate the restrictions.
 7. Success (no API key restriction) vs fail (with API key restriction)
     - SUCCESS: The "Server Header", "Layout" and "Client Header" will have the UID. The "Server Header" and "Layout" will render with the UID already set, but the "Client Header" will update after Firebase establishes a client connection.
-    - FAIL: Only the "Client Header" will have the UID.
+    - FAIL: Only the "Client Header" will have the UID. The backend logs an error `auth/requests-from-referer-<empty>-are-blocked`.
 8. Removing the API key Website restriction fixes the issue without code changes.
 
 ## Rebuild the Service Worker
