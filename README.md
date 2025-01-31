@@ -60,15 +60,18 @@ FirebaseServerApp could not login user with provided authIdToken:  Error [Fireba
 
 ## Steps to reproduce
 
+Note: The service worker does not automatically update/reload the SSR data. A page reload is needed to get the Authorization header in the request (needed for SSR Auth).
+
 1. Visit one of the hosted URLs (Vercel or Firebase App Hosting)
 2. When the page load it will register a service worker
 3. Click the "Sign in" button. This will sign in a demo user with a username and password and update the "Client Header", but not the "Server Header" and the "Layout". Alternatively, "Sign in Anon" will sign in an anonymous user and update the "Client Header", but not the "Server Header" and the "Layout".
 4. Verify SSR works as expected by reloading the page (CMD + R) so the Service Worker can include the Authorization header in the request (needed for SSR Auth).
 5. Add the expected Website API key restriction to the project (the domain where the app is hosted) from the GCP console.
-6. Success (no API key restriction) vs fail (with API key restriction)
+6. Wait some time (up to 5 minutes) for GCP to propagate the restrictions.
+7. Success (no API key restriction) vs fail (with API key restriction)
     - SUCCESS: The "Server Header", "Layout" and "Client Header" will have the UID. The "Server Header" and "Layout" will render with the UID already set, but the "Client Header" will update after Firebase establishes a client connection.
     - FAIL: Only the "Client Header" will have the UID.
-7. Removing the API key Website restriction fixes the issue without code changes.
+8. Removing the API key Website restriction fixes the issue without code changes.
 
 ## Rebuild the Service Worker
 
@@ -78,10 +81,10 @@ If you make any changes to the Service Worker, you need to run `npm run build-se
 
 1. Create a Firebase project
 2. Update the `.firebaserc` file with the new project ID
-3. Update the `firebaseConfig` in `nextjs/lib/firebase/config.ts` with the firebae API keys
+3. Update the `firebaseConfig` in `nextjs/lib/firebase/config.ts` with the Firebase API keys
 4. Enable Firebase Auth and App Hosting
 5. Deploy to Vercel or Firebase App Hosting
-6. Test the SSR Auth works
+6. Test the SSR Auth works as expected
 7. Add the correct API key restriction to the project (the domain where the app is hosted)
 8. Test the SSR Auth fails
 9. Remove the API key restriction and test the SSR Auth works again (Note: might need to reinstall the Service Worker or open an incognito window. "Chrome > Application > Service Workers > Update on reload" seems to work as well.)
