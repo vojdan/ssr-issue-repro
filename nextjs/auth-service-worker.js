@@ -50,19 +50,21 @@ const getBodyContent = req => {
 
 const getIdTokenPromise = () => {
 	return new Promise((resolve, reject) => {
-		console.log('getting id token promise', firebaseConfig);
+		console.log('2. initializing app with', firebaseConfig);
 		const app = initializeApp(firebaseConfig);
+		console.log('3. initialized app', app);
 		const auth = getAuth(app);
+		console.log('4. initialized auth', auth);
 
 		const unsubscribe = onAuthStateChanged(auth, user => {
-			console.log('Auth state changed.');
+			console.log('5. Auth state changed.');
 			unsubscribe();
 
 			if (user) {
-				console.log('user detected:', user);
+				console.log('6. user detected:', user);
 				getIdToken(user).then(
 					idToken => {
-						console.log("this is the token we'll send to the server:", idToken);
+						console.log("7. this is the token we'll send to the server:", idToken);
 						resolve(idToken);
 					},
 					error => {
@@ -70,7 +72,7 @@ const getIdTokenPromise = () => {
 					},
 				);
 			} else {
-				console.log('NO USER DETECTED!!!');
+				console.log('XXX. NO USER DETECTED!!!');
 				resolve(null);
 			}
 		});
@@ -81,7 +83,10 @@ self.addEventListener('fetch', event => {
 	/** @type {FetchEvent} */
 	const evt = event;
 
+	console.log('1. fetch event');
+
 	const requestProcessor = idToken => {
+		console.log('8.1. request processor', idToken);
 		let req = evt.request;
 		let processRequestPromise = Promise.resolve();
 		// For same origin https requests, append idToken to header.
@@ -95,6 +100,8 @@ self.addEventListener('fetch', event => {
 			req.headers.forEach((val, key) => {
 				headers.append(key, val);
 			});
+
+			console.log('9. adding id token to header', idToken);
 			// Add ID token to header.
 			headers.append('Authorization', 'Bearer ' + idToken);
 
@@ -120,12 +127,23 @@ self.addEventListener('fetch', event => {
 		}
 
 		return processRequestPromise.then(() => {
-			console.log('running sample', req);
+			console.log('10. processing request', req);
 			return fetch(req);
 		});
 	};
 	// Fetch the resource after checking for the ID token.
 	// This can also be integrated with existing logic to serve cached files
 	// in offline mode.
-	evt.respondWith(getIdTokenPromise().then(requestProcessor, requestProcessor));
+	evt.respondWith(
+		getIdTokenPromise().then(
+			successParam => {
+				console.log('8.0. YAAAAAY!!!', successParam);
+				return requestProcessor(successParam);
+			},
+			errorParam => {
+				console.error('8.0 XXXX DED. error param', errorParam);
+				return requestProcessor(errorParam);
+			},
+		),
+	);
 });
