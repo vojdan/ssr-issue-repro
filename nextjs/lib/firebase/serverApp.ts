@@ -8,7 +8,7 @@ import { firebaseConfig } from './config';
 
 export async function getAuthenticatedAppForUser(source: string) {
 	const authIdToken = (await headers()).get('Authorization')?.split('Bearer ')[1];
-	console.log(`getAuthenticatedAppForUser (${source}): authIdToken`, authIdToken);
+	console.log(`getAuthenticatedAppForUser (${source}): authIdToken header value is:`, authIdToken);
 
 	// print referer headers (this seems to be the correct one and not the "referrer" spelling)
 	const referer = (await headers()).get('referer');
