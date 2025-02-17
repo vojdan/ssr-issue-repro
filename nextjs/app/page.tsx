@@ -6,7 +6,7 @@ import { getThingsOnTheServer } from '../server/pokemon';
 async function ServerData() {
 	console.log('SERVER RUNNING API CALL...');
 	const bulbasaur = await getThingsOnTheServer();
-	console.log('SERVER RESULT:', bulbasaur.name, bulbasaur.abilities?.length);
+	console.log('SERVER API CALL RESULT:', bulbasaur.name);
 
 	return <h3>SERVER API: {bulbasaur.name}</h3>;
 }
