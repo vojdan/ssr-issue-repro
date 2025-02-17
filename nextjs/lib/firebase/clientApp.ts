@@ -4,8 +4,13 @@ import { getApps, initializeApp } from 'firebase/app';
 import { connectAuthEmulator, getAuth } from 'firebase/auth';
 import { firebaseConfig } from './config';
 
-export const firebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+console.log('1. initializing firebaseApp with:', firebaseConfig);
+const apps = getApps();
+console.log('2.1. apps.length:', apps.length);
+console.log('2.2. apps:', apps);
 
+export const firebaseApp = apps.length === 0 ? initializeApp(firebaseConfig) : apps[0];
+console.log('3. firebaseApp:', firebaseApp);
 const auth = getAuth(firebaseApp);
 
 const isBrowser = () => typeof window !== 'undefined';
