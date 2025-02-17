@@ -3,8 +3,6 @@ import { getAuth, getIdToken, onAuthStateChanged } from 'firebase/auth';
 
 // this is set during install
 let firebaseConfig;
-let firebaseApp;
-let auth;
 
 self.addEventListener('install', event => {
 	// extract firebase config from query string
@@ -15,24 +13,11 @@ self.addEventListener('install', event => {
 	}
 
 	firebaseConfig = JSON.parse(serializedFirebaseConfig);
-	// Initialize Firebase during installation
-	firebaseApp = initializeApp(firebaseConfig);
-	auth = getAuth(firebaseApp);
-
 	console.log('Service worker installed for', firebaseConfig);
 });
 
 self.addEventListener('activate', event => {
 	console.log('Service worker activated');
-	// Ensure auth is initialized
-	if (!auth) {
-		if (!firebaseConfig) {
-			console.log('\x1b[93m%s\x1b[0m', 'cant initialize auth, no firebase config found');
-		} else {
-			firebaseApp = firebaseApp || initializeApp(firebaseConfig);
-			auth = getAuth(firebaseApp);
-		}
-	}
 	event.waitUntil(clients.claim());
 });
 
@@ -65,11 +50,11 @@ const getBodyContent = req => {
 
 const getIdTokenPromise = () => {
 	return new Promise((resolve, reject) => {
-		if (!auth) {
-			console.error('Auth not initialized');
-			resolve(null);
-			return;
-		}
+		console.log('2. initializing app with', firebaseConfig);
+		const app = initializeApp(firebaseConfig);
+		console.log('3. initialized app', app);
+		const auth = getAuth(app);
+		console.log('4. initialized auth', auth);
 
 		const unsubscribe = onAuthStateChanged(auth, user => {
 			console.log('5. Auth state changed.');
@@ -83,7 +68,6 @@ const getIdTokenPromise = () => {
 						resolve(idToken);
 					},
 					error => {
-						console.error('Error getting ID token:', error);
 						resolve(null);
 					},
 				);
