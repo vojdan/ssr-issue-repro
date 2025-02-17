@@ -7677,116 +7677,159 @@
   );
 
   // auth-service-worker.js
-  var firebaseConfig;
+  var DB_NAME3 = "bronid-sw-db";
+  var DB_VERSION3 = 1;
+  var STORE_NAME2 = "firebaseConfig";
+  function openDatabase() {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open(DB_NAME3, DB_VERSION3);
+      request.onupgradeneeded = (event) => {
+        const db = event.target.result;
+        if (!db.objectStoreNames.contains(STORE_NAME2)) {
+          db.createObjectStore(STORE_NAME2);
+        }
+      };
+      request.onsuccess = (event) => {
+        resolve(event.target.result);
+      };
+      request.onerror = (event) => {
+        reject(event.target.error);
+      };
+    });
+  }
+  async function storeFirebaseConfigInIDB(config) {
+    const db = await openDatabase();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE_NAME2, "readwrite");
+      const store = tx.objectStore(STORE_NAME2);
+      store.put(config, "main");
+      tx.oncomplete = () => resolve();
+      tx.onerror = (event) => reject(event.target.error);
+    });
+  }
+  async function readFirebaseConfigFromIDB() {
+    const db = await openDatabase();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE_NAME2, "readonly");
+      const store = tx.objectStore(STORE_NAME2);
+      const request = store.get("main");
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = (event) => reject(event.target.error);
+    });
+  }
+  var firebaseConfigCache = null;
+  async function ensureFirebaseConfig() {
+    if (!firebaseConfigCache) {
+      firebaseConfigCache = await readFirebaseConfigFromIDB();
+    }
+    if (!firebaseConfigCache) {
+      throw new Error("No firebaseConfig found in IndexedDB");
+    }
+    return firebaseConfigCache;
+  }
   self.addEventListener("install", (event) => {
     const serializedFirebaseConfig = new URL(location).searchParams.get("firebaseConfig");
     if (!serializedFirebaseConfig) {
       throw new Error("Firebase Config object not found in service worker query string.");
     }
-    firebaseConfig = JSON.parse(serializedFirebaseConfig);
-    console.log("Service worker installed for", firebaseConfig);
+    const config = JSON.parse(serializedFirebaseConfig);
+    console.log("Service worker installing. Got firebaseConfig:", config);
+    event.waitUntil(
+      (async () => {
+        await storeFirebaseConfigInIDB(config);
+        console.log("Firebase config stored in IDB");
+      })()
+    );
   });
   self.addEventListener("activate", (event) => {
     console.log("Service worker activated");
     event.waitUntil(clients.claim());
   });
-  var getOriginFromUrl = (url) => {
+  function getOriginFromUrl(url) {
     const pathArray = url.split("/");
     const protocol = pathArray[0];
     const host = pathArray[2];
     return protocol + "//" + host;
-  };
-  var getBodyContent = (req) => {
+  }
+  function getBodyContent(req) {
+    if (req.method === "GET") {
+      return Promise.resolve(void 0);
+    }
     return Promise.resolve().then(() => {
-      if (req.method !== "GET") {
-        if (req.headers.get("Content-Type").indexOf("json") !== -1) {
-          return req.json().then((json) => {
-            return JSON.stringify(json);
-          });
-        } else {
-          return req.text();
-        }
+      const contentType = req.headers.get("Content-Type") || "";
+      if (contentType.includes("json")) {
+        return req.json().then((json) => JSON.stringify(json));
       }
-    }).catch((error) => {
+      return req.text();
+    }).catch(() => {
     });
-  };
-  var getIdTokenPromise = () => {
+  }
+  function getIdTokenPromise(firebaseConfig) {
     return new Promise((resolve, reject) => {
-      console.log("2. initializing app with", firebaseConfig);
+      console.log("Initialising Firebase App with config:", firebaseConfig);
       const app = initializeApp(firebaseConfig);
-      console.log("3. initialized app", app);
       const auth = getAuth(app);
-      console.log("4. initialized auth", auth);
       const unsubscribe = onAuthStateChanged(auth, (user) => {
-        console.log("5. Auth state changed.");
         unsubscribe();
         if (user) {
-          console.log("6. user detected:", user);
           getIdToken(user).then(
             (idToken) => {
-              console.log("7. this is the token we'll send to the server:", idToken);
+              console.log("Got an ID token from user:", idToken);
               resolve(idToken);
             },
-            (error) => {
+            () => {
               resolve(null);
             }
           );
         } else {
-          console.log("XXX. NO USER DETECTED!!!");
+          console.log("No user is signed in.");
           resolve(null);
         }
       });
     });
-  };
+  }
+  function requestProcessor(evt, idToken) {
+    let req = evt.request;
+    let processRequestPromise = Promise.resolve();
+    const isSameOrigin = self.location.origin === getOriginFromUrl(req.url);
+    const isHttpsOrLocalhost = self.location.protocol === "https:" || self.location.hostname === "localhost";
+    if (isSameOrigin && isHttpsOrLocalhost && idToken) {
+      const headers = new Headers();
+      req.headers.forEach((val, key) => {
+        headers.append(key, val);
+      });
+      headers.append("Authorization", "Bearer " + idToken);
+      processRequestPromise = getBodyContent(req).then((body) => {
+        try {
+          req = new Request(req.url, {
+            method: req.method,
+            headers,
+            mode: "same-origin",
+            // req.mode,
+            credentials: req.credentials,
+            cache: req.cache,
+            redirect: req.redirect,
+            referrer: req.referrer,
+            body
+            // bodyUsed: req.bodyUsed,
+            // context: req.context
+          });
+        } catch (e) {
+        }
+      });
+    }
+    return processRequestPromise.then(() => {
+      return fetch(req);
+    });
+  }
   self.addEventListener("fetch", (event) => {
     const evt = event;
-    console.log("1. fetch event");
-    const requestProcessor = (idToken) => {
-      console.log("8.1. request processor", idToken);
-      let req = evt.request;
-      let processRequestPromise = Promise.resolve();
-      if (self.location.origin == getOriginFromUrl(evt.request.url) && (self.location.protocol == "https:" || self.location.hostname == "localhost") && idToken) {
-        const headers = new Headers();
-        req.headers.forEach((val, key) => {
-          headers.append(key, val);
-        });
-        console.log("9. adding id token to header", idToken);
-        headers.append("Authorization", "Bearer " + idToken);
-        processRequestPromise = getBodyContent(req).then((body) => {
-          try {
-            req = new Request(req.url, {
-              method: req.method,
-              headers,
-              mode: "same-origin",
-              credentials: req.credentials,
-              cache: req.cache,
-              redirect: req.redirect,
-              referrer: req.referrer,
-              body
-              // bodyUsed: req.bodyUsed,
-              // context: req.context
-            });
-          } catch (e) {
-          }
-        });
-      }
-      return processRequestPromise.then(() => {
-        console.log("10. processing request", req);
-        return fetch(req);
-      });
-    };
-    evt.respondWith(
-      getIdTokenPromise().then(
-        (successParam) => {
-          console.log("8.0. YAAAAAY!!!", successParam);
-          return requestProcessor(successParam);
-        },
-        (errorParam) => {
-          console.error("8.0 XXXX DED. error param", errorParam);
-          return requestProcessor(errorParam);
-        }
-      )
-    );
+    const responsePromise = (async () => {
+      const firebaseConfig = await ensureFirebaseConfig();
+      const idToken = await getIdTokenPromise(firebaseConfig);
+      return requestProcessor(evt, idToken);
+    })();
+    event.respondWith(responsePromise);
   });
 })();
 /*! Bundled license information:
