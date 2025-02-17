@@ -32,7 +32,7 @@ async function storeFirebaseConfigInIDB(config) {
 	return new Promise((resolve, reject) => {
 		const tx = db.transaction(STORE_NAME, 'readwrite');
 		const store = tx.objectStore(STORE_NAME);
-		store.put(config, 'main'); // "main" is the key
+		store.put(config, 'publicFirebaseConfig'); // "publicFirebaseConfig" is the key
 		tx.oncomplete = () => resolve();
 		tx.onerror = event => reject(event.target.error);
 	});
@@ -43,7 +43,7 @@ async function readFirebaseConfigFromIDB() {
 	return new Promise((resolve, reject) => {
 		const tx = db.transaction(STORE_NAME, 'readonly');
 		const store = tx.objectStore(STORE_NAME);
-		const request = store.get('main');
+		const request = store.get('publicFirebaseConfig');
 		request.onsuccess = () => resolve(request.result);
 		request.onerror = event => reject(event.target.error);
 	});
